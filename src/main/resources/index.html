@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D3 Graph Test</title>
+<script type="text/javascript" src="js/d3.v4.min.js"></script>
+<script type="text/javascript" src="js/dagre.min.js"></script>
+<script type="text/javascript" src="js/d3-scale-chromatic.v1.min.js"></script>
+<script type='text/javascript'
+	src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script>
+</head>
+<body>
+	<style>
+.svg-container {
+	display: inline-block;
+	position: relative;
+	width: 100%;
+	padding-bottom: 100%; /* aspect ratio */
+	vertical-align: top;
+	overflow: hidden;
+}
+
+.svg-content-responsive {
+	display: inline-block;
+	position: absolute;
+	top: 10px;
+	left: 0;
+}
+</style>
+	<div id="graph"></div>
+	<script type="text/javascript">
+
+function on_select() {
+    //data = [{"id":4,"parentIDs":[],"codes":["Patient 1","Patient 3","Patient 5","Patient 6","Patient 7","Patient 8","Patient 9","Patient 11","Patient 12","Patient 15","Patient 17","Patient 20","Patient 24","Patient 29","Patient 30","Patient 31","Patient 33","Patient 34","Patient 35","Patient 39","Patient 41","Patient 43","Patient 44","Patient 52","Patient 56","Patient 59","Patient 67","Patient 69","Patient 71","Patient 84","Patient 87"],"childIDs":[5],"name":"Homo sapiens Control","factorValue":"Control","sampleType":"Q_BIOLOGICAL_ENTITY","measuredPercent":0,"amount":31,"leaf":false},{"id":5,"parentIDs":[4],"codes":["Extract 1","Extract 3","Extract 5","Extract 6","Extract 7","Extract 8","Extract 9","Extract 11","Extract 12","Extract 15","Extract 17","Extract 20","Extract 24","Extract 29","Extract 30","Extract 31","Extract 33","Extract 34","Extract 35","Extract 39","Extract 41","Extract 43","Extract 44","Extract 52","Extract 56","Extract 59","Extract 67","Extract 69","Extract 71","Extract 84","Extract 87"],"childIDs":[6],"name":"Whole_Blood","factorValue":"Control","sampleType":"Q_BIOLOGICAL_SAMPLE","measuredPercent":0,"amount":31,"leaf":false},{"id":6,"parentIDs":[5],"codes":["GSM1527406","GSM1527407","GSM1527408","GSM1527409","GSM1527410","GSM1527411","GSM1527412","GSM1527414","GSM1527415","GSM1527418","GSM1527420","GSM1527422","GSM1527425","GSM1527430","GSM1527431","GSM1527432","GSM1527433","GSM1527434","GSM1527435","GSM1527439","GSM1527441","GSM1527442","GSM1527443","GSM1527444","GSM1527447","GSM1527450","GSM1527454","GSM1527456","GSM1527457","GSM1527462","GSM1527464"],"childIDs":[],"name":"RNA","factorValue":"Control","sampleType":"Q_TEST_SAMPLE","measuredPercent":0,"amount":31,"leaf":true},{"id":25,"parentIDs":[],"codes":["Patient 10","Patient 13","Patient 14","Patient 16","Patient 19","Patient 21","Patient 23","Patient 25","Patient 26","Patient 27","Patient 28","Patient 36","Patient 37","Patient 38","Patient 40","Patient 53","Patient 54","Patient 57","Patient 58","Patient 60","Patient 61","Patient 66","Patient 68","Patient 77","Patient 80","Patient 81","Patient 83","Patient 85","Patient 88","Patient 89","Patient 90","Patient 91","Patient 92","Patient 93","Patient 94"],"childIDs":[26],"name":"Homo sapiens PD","factorValue":"PD","sampleType":"Q_BIOLOGICAL_ENTITY","measuredPercent":0,"amount":35,"leaf":false},{"id":26,"parentIDs":[25],"codes":["Extract 10","Extract 13","Extract 14","Extract 16","Extract 19","Extract 21","Extract 23","Extract 25","Extract 26","Extract 27","Extract 28","Extract 36","Extract 37","Extract 38","Extract 40","Extract 53","Extract 54","Extract 57","Extract 58","Extract 60","Extract 61","Extract 66","Extract 68","Extract 77","Extract 80","Extract 81","Extract 83","Extract 85","Extract 88","Extract 89","Extract 90","Extract 91","Extract 92","Extract 93","Extract 94"],"childIDs":[27],"name":"Whole_Blood","factorValue":"PD","sampleType":"Q_BIOLOGICAL_SAMPLE","measuredPercent":0,"amount":35,"leaf":false},{"id":27,"parentIDs":[26],"codes":["GSM1527413","GSM1527416","GSM1527417","GSM1527419","GSM1527421","GSM1527423","GSM1527424","GSM1527426","GSM1527427","GSM1527428","GSM1527429","GSM1527436","GSM1527437","GSM1527438","GSM1527440","GSM1527445","GSM1527446","GSM1527448","GSM1527449","GSM1527451","GSM1527452","GSM1527453","GSM1527455","GSM1527458","GSM1527459","GSM1527460","GSM1527461","GSM1527463","GSM1527465","GSM1527466","GSM1527467","GSM1527468","GSM1527469","GSM1527470","GSM1527471"],"childIDs":[],"name":"RNA","factorValue":"PD","sampleType":"Q_TEST_SAMPLE","measuredPercent":0,"amount":35,"leaf":true}];
+    //init_graph_circles(data);
+}
+
+var pi = Math.PI;
+var idToSample = {};
+    
+function removeAllSpaces(text) {
+    return text.replace(/\s/g, "")
+}
+
+function getTextWidth(text, font) {
+    // re-use canvas object for better performance
+    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+    var context = canvas.getContext("2d");
+    context.font = font;
+    var metrics = context.measureText(text);
+    return metrics.width;
+}
+
+var width_label = function(d) {
+    return getTextWidth(d[3].toString(), "12px arial")+5;
+}
+
+var icons = {"dna" : "img/dna.png",
+             "rna" : "img/rna.png",
+             "peptide" : "img/peptide.png",
+             "protein" :"img/protein.png",
+             "smallmolecules" : "img/mol.png"};
+
+function addBGImages(canvas, data, prefix, size) {
+    canvas.select("defs").selectAll("patterns")
+        .data(data).enter()
+        .append("svg:pattern")
+        .attr('width', 1)
+        .attr('height', 1)
+        //.attr("patternContentUnits", "objectBoundingBox")
+        .attr("patternUnits", "objectBoundingBox")
+        .attr("id", function (d) {return prefix+d;})
+        .append("svg:image")
+        .attr('width', size*2)
+        .attr('height', size*2)
+        .attr("xlink:href", function (d) {return icons[d];});
+}
+
+function set_image_path(path) {
+	console.log(path);
+}
+
+function init_graph_circles(samples) {
+        if(d3.select("div#graph").select("div")) {
+            d3.select("div#graph").select("div").remove();
+        }
+
+        var factor = 1;
+        var rad = 20 * factor;
+        var margin = 15 * factor; // distance from top and left
+        var max_Y = 0, max_X = 0;// maximal node positions
+    	var longest_label = "x";
+
+        var g = new dagre.graphlib.Graph()
+        // Set an object for the graph label
+        g.setGraph({marginx:margin,marginy:margin});
+
+        // Default to assigning a new object as a label for each new edge.
+        g.setDefaultEdgeLabel(function() {
+            return {};
+        });
+
+        // if(d3.select(diagramElement).select("div")) {
+        // d3.select(diagramElement).select("div").remove();
+        // }
+
+        var usedSymbols = new Set();
+        var noSymbols = new Set();
+        for ( var key in samples) {
+            var sample = samples[key];
+
+            //tests
+            //sample.id = key;
+            //sample.name = sample[1]
+            //sample.childIDs = sample[0]
+
+            idToSample[sample.id] = sample;
+            g.setNode(sample.id, {
+                label : sample.name,
+                width : rad * 2,
+                height : rad * 2
+            });
+            for (var j = 0; j < sample.childIDs.length; j++) {
+                g.setEdge(sample.id, sample.childIDs[j])
+            }
+            // for(var j = 0; j < sample.children.length; j++) {
+            // g.setEdge(sample.id, sample.children[j].id)
+            // }
+            label = sample.name;
+            lowerLabel = removeAllSpaces(label.toLowerCase());
+            res = Object.keys(icons).indexOf(lowerLabel);
+            if (res === -1) {
+                if (label !== "") {
+                    noSymbols.add(label);
+                }
+            } else {
+                usedSymbols.add(label);
+            }
+        }
+
+        // var color = d3.scaleOrdinal()
+        // .domain(noSymbols)
+        // .range(['#f7fbff','#c6dbef','#6baed6','#2171b5','#084594']);
+        // var color = d3.scaleOrdinal(d3.schemeCategory20)
+        // var color = d3.scaleOrdinal(d3.schemeCategory20b)
+        var color = d3.scaleOrdinal(d3.schemeCategory10).domain(noSymbols);
+        if (noSymbols.length > 10) {
+            var color = d3.scaleOrdinal(d3.schemeCategory20).domain(noSymbols);
+        }
+
+        dagre.layout(g);
+
+        var nodes = g.nodes();
+        // find maximum coordinates of nodes
+        g.nodes().forEach(function(v) {
+            var n = g.node(v);
+            if (typeof n != 'undefined') {
+                if (n.label != "") {
+                    label = n.label.toLowerCase().replace(" ", "");
+                    var x = n["x"];
+                    var y = n["y"];
+                    max_X = Math.max(max_X, x);
+                    max_Y = Math.max(max_Y, y);
+					if(n.label.length > longest_label.length) {
+          				longest_label = n.label;
+          			}
+                }
+            }
+        });
+    		var legend_entry_height = rad + 5;
+    		// guess needed width of graph using 4-digit sample label
+    		var graph_width = factor * max_X + rad + getTextWidth("9999") + 20;
+    		var legend_width = factor * rad/2 + getTextWidth(longest_label)*2 + 20;			
+
+    		// minimum width needed to make the graph look nice
+    		var min_width = 150;
+    		
+    		var box_width = Math.max(min_width, Math.max(legend_width, graph_width));
+    		var box_height = factor * max_Y + rad + 20 + (noSymbols.size + usedSymbols.size)
+    					* (legend_entry_height+10);
+        
+        var svg = d3.select("div#graph").append("div").classed(
+                "svg-container", true) // container class to make it responsive
+    		
+    		.append("svg")
+    		// responsive SVG needs these 2 attributes and no width and height attr
+    		.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox",
+    				"0 0 " + box_width + " " + box_height + "")
+    		// class to make it responsive
+    		.classed("svg-content-responsive", true);
+        
+        svg.append("defs");
+        addBGImages(svg, Object.keys(icons), "", rad * 2);
+        addBGImages(svg, Object.keys(icons), "legend_", rad);
+
+        g.edges().forEach(
+                function(e) {
+                    var points = g.edge(e)["points"];
+                    var start = g.node(e.v);
+                    var end = g.node(e.w);
+                    var mid = points[1];
+                    var top_x = start["x"] * factor;
+                    var top_y = start["y"] * factor;
+                    var mid_x = mid["x"] * factor;
+                    var mid_y = mid["y"] * factor;
+                    var bot_x = end["x"] * factor;
+                    var bot_y = end["y"] * factor;
+                    d3.select("svg").append("line").attr("x1",
+                            top_x).attr("y1",
+                            top_y).attr("x2",
+                            mid_x).attr("y2",
+                            mid_y).attr("stroke-width", 2).attr("stroke", "black");
+                    d3.select("svg").append("line").attr("x1",
+                            mid_x).attr("y1",
+                            mid_y).attr("x2",
+                            bot_x).attr("y2",
+                            bot_y).attr("stroke-width", 2).attr("stroke", "black");
+                });
+
+        g.nodes().forEach(
+                function(v) {
+                    var n = g.node(v);
+                    var data = idToSample[v];
+                    var label = n.label;
+                    if (label != "") {
+                        var lowerLabel = removeAllSpaces(label.toLowerCase());
+                        var x = n["x"] * factor;
+                        var y = n["y"] * factor;
+
+                        // main circles
+                        d3.select("svg").append("circle").attr("cx", x).attr(
+                                "cy", y).attr("r", rad).attr(
+                                        "stroke", "black").style("fill",
+                                function() {
+                                    if (usedSymbols.has(label)) {
+                                        return "#3494F8";
+                                    } else {
+                                        return color(label);
+                                    }
+                                })
+                             .on('click', function() {
+                            	 test.sendNames(label, data["codes"]);
+                             })
+                             .on("mouseover", function(){
+                             d3.select(this).attr("opacity",0.9);
+                             })
+                             .on("mouseout", function(){
+                             d3.select(this).attr("opacity",1);
+                             });
+                        // circles containing symbols
+                        if (usedSymbols.has(label)) {
+                            d3.select("svg").append("circle").attr("cx", x)
+                                    .attr("cy", y).attr("r", rad).attr(
+                                            "stroke", "black")
+                                            .attr("fill",
+                                            "url(#" + lowerLabel + ")")
+                             .on('click', function() {
+                            	 test.sendNames(label, data["codes"]);
+                             })
+                             .on("mouseover", function(){
+                             d3.select(this).attr("opacity",0.3);
+                             })
+                             .on("mouseout", function(){
+                             d3.select(this).attr("opacity",1);
+                             })
+                            ;
+                        }
+                        // amount
+                        d3.select("svg").append("text").text(data.amount).attr(
+                                "font-family", "sans-serif").attr("font-size",
+                                "14px").attr("stroke", "black").attr(
+                                "text-anchor", "middle").attr("x", x + 22)
+                                .attr("y", y - 22);
+                    }
+                });
+
+        // legend
+        var legend_x = margin;
+        var legend_y = max_Y * factor + rad + 20;
+        var used = [...usedSymbols];
+        var nosym = [...noSymbols];
+        d3.select("svg").selectAll("legends").data(nosym)
+                .enter().append("circle").attr("cx", legend_x).attr("cy",
+                        function(d, i) {
+                            return legend_y + legend_entry_height * i + 10;
+                        }).attr("r", rad / 2)
+                // .attr("stroke", "black")
+                .attr("fill", function(d) {
+                    return color(d);
+                });
+        d3.select("svg").selectAll("legends").data(used)
+                .enter().append("circle").attr("cx", legend_x).attr(
+                        "cy",
+                        function(d, i) {
+                            return legend_y + legend_entry_height
+                                    * (noSymbols.size + i) + 10;
+                        }).attr("r", rad / 2)
+                // .attr("stroke", "black")
+                .attr("fill", "#3494F8");
+        d3.select("svg").selectAll("legends").data(used)
+                .enter().append("circle").attr("cx", legend_x).attr(
+                        "cy",
+                        function(d, i) {
+                            return legend_y + legend_entry_height
+                                    * (noSymbols.size + i) + 10;
+                        }).attr("r", rad / 2)
+                // .attr("stroke","black")
+                .attr("fill", function(d) {
+                    var type = removeAllSpaces(d.toLowerCase());
+                    return "url(#legend_" + type + ")";
+                });
+        // text
+        d3.select("svg").selectAll("legends").data(used)
+                .enter().append("text").text(function(d) {
+                    return d;
+                }).attr("font-family", "sans-serif").attr("font-size", "14px")
+                .attr("stroke", "black").attr("text-anchor", "left").attr("x",
+                        legend_x + margin).attr(
+                        "y",
+                        function(d, i) {
+                            return legend_y + legend_entry_height
+                                    * (noSymbols.size + i) + 15;
+                        });
+        d3.select("svg").selectAll("legends").data(nosym)
+                .enter().append("text").text(function(d) {
+                    return d;
+                }).attr("font-family", "sans-serif").attr("font-size", "14px")
+                .attr("stroke", "black").attr("text-anchor", "left").attr("x",
+                        legend_x + margin).attr("y", function(d, i) {
+                    return legend_y + legend_entry_height * i + 15;
+                });
+    };
+on_select();
+</script>
+
+</body>
+</html>
