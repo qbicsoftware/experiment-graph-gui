@@ -21,12 +21,12 @@ import org.mockito.junit.MockitoRule;
 
 import org.powermock.reflect.Whitebox;
 
-import life.qbic.app.SampleGraph;
+import life.qbic.app.ExperimentGraphApp;
 
 /**
  * Unit tests.
  */
-public class SampleGraphTest  {
+public class ExperimentGraphAppTest  {
 
     @Mock
     private Logger mockLogger;
@@ -46,7 +46,7 @@ public class SampleGraphTest  {
     @Before
     public void setUpTest() {
         // inject mock logger
-        Whitebox.setInternalState(SampleGraph.class, "LOG", mockLogger);
+        Whitebox.setInternalState(ExperimentGraphApp.class, "LOG", mockLogger);
     }
 
 //    @Test
@@ -59,7 +59,7 @@ public class SampleGraphTest  {
 //            }
 //        });
 //        
-//        SampleGraph.main(new String[] {"--version"});
+//        ExperimentGraphApp.main(new String[] {"--version"});
 //    }
     
 }
