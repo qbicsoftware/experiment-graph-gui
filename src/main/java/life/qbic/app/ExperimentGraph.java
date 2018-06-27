@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.treez.javafxd3.d3.D3;
 import org.treez.javafxd3.d3.arrays.Array;
 import org.treez.javafxd3.d3.core.Selection;
@@ -123,8 +125,6 @@ public class ExperimentGraph extends AbstractDemoCase {
   private void init(List<SampleSummary> nodes) throws IOException {
     int factor = 1;
     int rad = 20 * factor;
-
-
 
     svg = d3.select("svg") //
         .attr("width", width) //
@@ -379,26 +379,35 @@ public class ExperimentGraph extends AbstractDemoCase {
 
   }
 
+  private Pair<Double, Double> pointOnCircle(double r, double arc) {
+    double x = Math.sin(Math.toRadians(arc)) * r;
+    double y = Math.cos(Math.toRadians(arc)) * r;
+    return new ImmutablePair<Double, Double>(x, y);
+  }
+
   private void drawAnalyteIcon(final Selection element, String type, double x, double y, int rad) {
     double left = x - rad;
     double top = y - rad;
     double right = x + rad;
     double bottom = y + rad;
+    Pair<Double, Double> topRight = pointOnCircle(rad, 45);
+    double xyFromCenter = topRight.getLeft();
+
     switch (type) {
       case "dna":
         element.append("line") //
-            .attr("x1", left) //
-            .attr("y1", top) //
-            .attr("x2", right) //
-            .attr("y2", bottom) //
+            .attr("x1", x + xyFromCenter) //
+            .attr("y1", y + xyFromCenter) //
+            .attr("x2", x - xyFromCenter) //
+            .attr("y2", y - xyFromCenter) //
             .attr("stroke-width", 2).attr("stroke", "black"); //
         break;
       case "rna":
         element.append("line") //
-            .attr("x1", left) //
-            .attr("y1", bottom) //
-            .attr("x2", right) //
-            .attr("y2", top) //
+            .attr("x1", x - xyFromCenter) //
+            .attr("y1", y + xyFromCenter) //
+            .attr("x2", x + xyFromCenter) //
+            .attr("y2", y - xyFromCenter) //
             .attr("stroke-width", 2).attr("stroke", "black"); //
         break;
       case "peptide":
@@ -417,11 +426,11 @@ public class ExperimentGraph extends AbstractDemoCase {
         break;
       case "protein":
         element.append("line") //
-        .attr("x1", left) //
-        .attr("y1", bottom) //
-        .attr("x2", right) //
-        .attr("y2", top) //
-        .attr("stroke-width", 2).attr("stroke", "black"); //
+            .attr("x1", x - xyFromCenter) //
+            .attr("y1", y + xyFromCenter) //
+            .attr("x2", x + xyFromCenter) //
+            .attr("y2", y - xyFromCenter) //
+            .attr("stroke-width", 2).attr("stroke", "black"); //
       case "smallmolecules":
         element.append("line") //
             .attr("x1", left) //
