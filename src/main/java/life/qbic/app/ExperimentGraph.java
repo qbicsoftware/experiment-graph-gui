@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.treez.javafxd3.d3.D3;
@@ -29,6 +30,7 @@ import org.treez.javafxd3.javafx.JavaFxJsObject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -60,8 +62,8 @@ public class ExperimentGraph extends AbstractDemoCase {
     {
       put("dna", "img/dna_filled.svg");
       put("rna", "img/rna.png");
-      put("peptide", "img/peptide.svg");
-      put("protein", "img/protein.png");
+      put("peptides", "img/peptide.svg");
+      put("proteins", "img/protein.png");
       put("smallmolecules", "img/mol.png");
     }
   };
@@ -309,13 +311,37 @@ public class ExperimentGraph extends AbstractDemoCase {
 
       d3.select("g") //
           .append("text") //
-          .text(label) //
+          .text(shortenInfo(label)) //
           .attr("font-family", "sans-serif") //
           .attr("font-size", "14px") //
           .attr("stroke", "black") //
           .attr("text-anchor", "left") //
           .attr("x", legendX + margin.left) //
           .attr("y", legendY + legendEntryHeight * (noSymbols.size() + i) + 15); //
+    }
+
+//    double initZoom = new Double(width) / maxX;
+//    if (initZoom < 1) {
+//      System.out.println(width);
+//      System.out.println(maxX);
+//      System.out.println(initZoom);
+//      svg.attr("transform", "translate(0, 0)scale(" + initZoom + ")");
+//    }
+      
+  }
+
+  private String shortenInfo(String info) {
+    switch (info) {
+      case "CARBOHYDRATES":
+        return "Carbohydrates";
+      case "SMALLMOLECULES":
+        return "Smallmolecules";
+      case "DNA":
+        return "DNA";
+      case "RNA":
+        return "RNA";
+      default:
+        return WordUtils.capitalizeFully(info.replace("_", " "));
     }
   }
 
@@ -346,10 +372,11 @@ public class ExperimentGraph extends AbstractDemoCase {
     VBox dialogVbox = new VBox(20);
     Label l = new Label(label);
 
+    dialogVbox.setAlignment(Pos.CENTER);
     dialogVbox.setSpacing(5);
-    dialogVbox.setPadding(new Insets(10, 0, 0, 10));
+    dialogVbox.setPadding(new Insets(10, 10, 10, 10));
     dialogVbox.getChildren().addAll(l, list);
-    showPopup(dialogVbox, 300, 500);
+    showPopup(dialogVbox, l.getMaxWidth(), 500);
   }
 
   private void showPopup(Parent content, double width, double height) {
@@ -410,7 +437,7 @@ public class ExperimentGraph extends AbstractDemoCase {
             .attr("y2", y - xyFromCenter) //
             .attr("stroke-width", 2).attr("stroke", "black"); //
         break;
-      case "peptide":
+      case "peptides":
         element.append("line") //
             .attr("x1", left) //
             .attr("y1", bottom - rad) //
@@ -424,7 +451,7 @@ public class ExperimentGraph extends AbstractDemoCase {
             .attr("y2", bottom - rad) //
             .attr("stroke-width", 2).attr("stroke", "black"); //
         break;
-      case "protein":
+      case "proteins":
         element.append("line") //
             .attr("x1", x - xyFromCenter) //
             .attr("y1", y + xyFromCenter) //
