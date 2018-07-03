@@ -2,10 +2,13 @@ package life.qbic.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
+import org.isatools.isacreator.model.Study;
 import org.treez.javafxd3.d3.D3;
 import org.treez.javafxd3.d3.core.Selection;
 import org.treez.javafxd3.d3.demo.DemoCase;
@@ -24,17 +27,22 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import life.qbic.expdesign.SamplePreparator;
 import life.qbic.expdesign.model.ExperimentalDesignType;
 import life.qbic.expdesign.model.StructuredExperiment;
+import life.qbic.isatab.ISAToGraph;
 
 /**
  * Stand alone tool to display imported experimental designs according to their experimental
@@ -44,6 +52,7 @@ public class ExperimentGraphApp extends Application {
 
   final private SamplePreparator expParser = new SamplePreparator();
   private StructuredExperiment currentProject;
+  private Map<Study, StructuredExperiment> isaStudies;
 
   /**
    * The JavaFx main scene
@@ -80,13 +89,29 @@ public class ExperimentGraphApp extends Application {
   @Override
   public void start(Stage stage) {
 
+    final ToggleGroup designtypeGroup = new ToggleGroup();
+
     final FileChooser fileChooser = new FileChooser();
+    final DirectoryChooser dirChooser = new DirectoryChooser();
 
     final Button openButton = new Button("Load experimental design");
+    final ComboBox<String> studies = new ComboBox<String>();
     final ComboBox<String> factors = new ComboBox<String>();
 
     final Pane rootGroup = new VBox(12);
-    rootGroup.getChildren().addAll(openButton, factors);
+
+    RadioButton rb1 = new RadioButton("Upload QBiC Design");
+    rb1.setToggleGroup(designtypeGroup);
+    rb1.setSelected(true);
+    rb1.setUserData(false);
+
+    RadioButton rb2 = new RadioButton("Upload ISATab");
+    rb2.setToggleGroup(designtypeGroup);
+    rb2.setUserData(true);
+
+    studies.setVisible(false);
+
+    rootGroup.getChildren().addAll(rb1, rb2, openButton, studies, factors);
     rootGroup.setPadding(new Insets(12, 12, 12, 12));
 
     // create content node
@@ -114,27 +139,76 @@ public class ExperimentGraphApp extends Application {
     // add browser
     hBoxChildren.add(browser);
 
+    designtypeGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+      public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle,
+          Toggle new_toggle) {
+        Toggle selected = designtypeGroup.getSelectedToggle();
+        if (selected != null) {
+          if ((boolean) selected.getUserData()) {
+            dirChooser.setTitle("Select ISATab folder");
+          }
+        }
+      }
+    });
+
+    studies.valueProperty().addListener(new ChangeListener<String>() {
+
+      @Override
+      public void changed(ObservableValue<? extends String> observable, String oldValue,
+          String newValue) {
+        for (Study s : isaStudies.keySet()) {
+          if (s.toString().equals(newValue)) {
+            currentProject = isaStudies.get(s);
+            factors.setItems(
+                FXCollections.observableArrayList(currentProject.getFactorsToSamples().keySet()));
+          }
+        }
+
+      }
+    });
+
     openButton.setOnAction(new EventHandler<ActionEvent>() {
       @Override
       public void handle(final ActionEvent e) {
-        File file = fileChooser.showOpenDialog(stage);
-        if (file != null) {
-          factors.getItems().clear();
-          try {
-            expParser.processTSV(file, ExperimentalDesignType.Standard, true);
-            currentProject = expParser.getSampleGraph();
 
-            if (currentProject.getFactorsToSamples().isEmpty()) {
-              System.out.println("is empty");
-              showPopupMessage("Experimental design could not be parsed.", stage);
+        Toggle selected = designtypeGroup.getSelectedToggle();
+        if (selected != null) {
+          File file = null;
+          boolean isa = (boolean) selected.getUserData();
+          if (isa) {
+            file = dirChooser.showDialog(stage);
+          } else {
+            file = fileChooser.showOpenDialog(stage);
+          }
+          if (file != null) {
+            factors.getItems().clear();
+            studies.getItems().clear();
+            if (isa) {
+              ISAToGraph isaParser = new ISAToGraph();
+              isaParser.read(file);
+              isaStudies = isaParser.getGraphsByStudy();
+              studies.setVisible(true);
+              List<String> studyNames = new ArrayList<String>();
+              for (Study study : isaParser.getGraphsByStudy().keySet()) {
+                studyNames.add(study.toString());
+              }
+              studies.setItems(FXCollections.observableArrayList(studyNames));
+
+            } else {
+              studies.setVisible(false);
+              try {
+                expParser.processTSV(file, ExperimentalDesignType.Standard, true);
+                currentProject = expParser.getSampleGraph();
+              } catch (IOException | JAXBException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+              }
+              if (currentProject.getFactorsToSamples().isEmpty()) {
+                showPopupMessage("Experimental design could not be parsed.", stage);
+              }
+              factors.setItems(
+                  FXCollections.observableArrayList(currentProject.getFactorsToSamples().keySet()));
             }
-
-
-            factors.setItems(
-                FXCollections.observableArrayList(currentProject.getFactorsToSamples().keySet()));
-          } catch (IOException | JAXBException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
           }
         }
       }
@@ -156,21 +230,21 @@ public class ExperimentGraphApp extends Application {
     dialogVbox.setSpacing(5);
     dialogVbox.setPadding(new Insets(10, 0, 0, 10));
     dialogVbox.getChildren().addAll(l);
-      Scene dialogScene = new Scene(dialogVbox, 300, 150);
-      final Stage dialog = new Stage();
-      dialog.initModality(Modality.APPLICATION_MODAL);
-      dialog.initOwner(stage);
-      dialog.setScene(dialogScene);
-      dialog.show();
+    Scene dialogScene = new Scene(dialogVbox, 300, 150);
+    final Stage dialog = new Stage();
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.initOwner(stage);
+    dialog.setScene(dialogScene);
+    dialog.show();
   }
-  
+
   private void runDemoSuite(Stage stage, VBox buttonPane, VBox demoPreferenceBox,
       ComboBox<String> factors) {
     D3 d3 = browser.getD3();
 
     // set stage title
     String versionString = "D3 API version: " + d3.version();
-    String title = "Welcome to javax-d3 : A thin Java wrapper around d3." + versionString;
+    String title = "Experiment Graph" + versionString;
     stage.setTitle(title);
 
     factors.valueProperty().addListener(new ChangeListener<String>() {
@@ -179,8 +253,10 @@ public class ExperimentGraphApp extends Application {
       public void changed(ObservableValue<? extends String> observable, String oldValue,
           String newValue) {
         stopCurrentView();
-        createAndStartNewView(ExperimentGraph.factory(d3, demoPreferenceBox,
-            currentProject.getFactorsToSamples().get(newValue), stage));
+        clearContent();
+        if (newValue != null && !newValue.isEmpty())
+          createAndStartNewView(ExperimentGraph.factory(d3, demoPreferenceBox,
+              currentProject.getFactorsToSamples().get(newValue), stage));
       }
 
       private void stopCurrentView() {
@@ -191,7 +267,6 @@ public class ExperimentGraphApp extends Application {
       }
 
       private void createAndStartNewView(final DemoFactory demoClass) {
-        clearContent();
         DemoCase demo = demoClass.newInstance();
         currentView = demo;
         demo.start();
