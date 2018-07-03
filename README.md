@@ -11,6 +11,9 @@ Created by Andreas Friedrich (andreas.friedrich@qbic.uni-tuebingen.de).
 ## Description
 
 ## How to Install
+If you are compiling this project, you will need to set the `MAVEN_OPTS` environment variable to contain the Java Virtual Machine (JVM) option `-Xss4m` (i.e., `export MAVEN_OPTS="-Xss4m"` in Linux). This will instruct the JVM to set the thread stack size to `4m`, which is required for the proper compilation of this project.
+
+Check [this page](http://maven.apache.org/configure.html) for more information on how to configure Maven.
 
 ## License
 
