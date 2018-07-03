@@ -26,12 +26,8 @@ before_install: unset _JAVA_OPTIONS
 # speed up builds by telling Travis that we don't need any special "installation"
 install: true
 
-# check if we need to add a license file for Vaadin charts
-before_script: if [ "$VAADIN_CHARTS_LICENSE_CODE" != "" ]; then
-                  echo "$VAADIN_CHARTS_LICENSE_CODE" > ~/.vaadin.charts.developer.license;
-               fi;
-               # set thread stack size to 4m (2m is not enough for this assembly)
-               export MAVEN_OPTS="-Xss4m";
+# set thread stack size to 4m (2m is not enough for this assembly)  
+before_script: export MAVEN_OPTS="-Xss4m"
 
 # as agreed in our SOP, build everything (don't deploy, just try to 'mvn install' locally, which covers all phases)
 script: mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml clean cobertura:cobertura install
