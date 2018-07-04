@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.treez.javafxd3.d3.D3;
@@ -106,23 +106,23 @@ public class ExperimentGraph extends AbstractDemoCase {
     };
   }
 
-  private void addBGImages(Selection root, Set<String> iconSet, String path, int size) {
-
-    DataFunction<String> namesFunction =
-        new DataFunctionWrapper<>(String.class, engine, (names) -> {
-          return path + names;
-        });
-
-    DataFunction<String> urlFunction = new DataFunctionWrapper<>(String.class, engine, (names) -> {
-      return icons.get(names);
-    });
-
-    root.selectAll("patterns").data(iconSet.toArray()).enter().append("svg:pattern")
-        .attr("width", 1).attr("height", 1)
-        // .attr("patternContentUnits", "objectBoundingBox")
-        .attr("patternUnits", "objectBoundingBox").attr("id", namesFunction).append("svg:image")
-        .attr("width", size * 2).attr("height", size * 2).attr("xlink:href", urlFunction);
-  }
+//  private void addBGImages(Selection root, Set<String> iconSet, String path, int size) {
+//
+//    DataFunction<String> namesFunction =
+//        new DataFunctionWrapper<>(String.class, engine, (names) -> {
+//          return path + names;
+//        });
+//
+//    DataFunction<String> urlFunction = new DataFunctionWrapper<>(String.class, engine, (names) -> {
+//      return icons.get(names);
+//    });
+//
+//    root.selectAll("patterns").data(iconSet.toArray()).enter().append("svg:pattern")
+//        .attr("width", 1).attr("height", 1)
+//        // .attr("patternContentUnits", "objectBoundingBox")
+//        .attr("patternUnits", "objectBoundingBox").attr("id", namesFunction).append("svg:image")
+//        .attr("width", size * 2).attr("height", size * 2).attr("xlink:href", urlFunction);
+//  }
 
   private void init(List<SampleSummary> nodes) throws IOException {
     int factor = 1;
@@ -137,9 +137,9 @@ public class ExperimentGraph extends AbstractDemoCase {
     initJSLibraries();
     computeGraphCoordinates(rad, nodes);
 
-    Selection defs = d3.select("svg").append("defs");
-    addBGImages(defs, icons.keySet(), "", rad * 2);
-    addBGImages(defs, icons.keySet(), "legend_", rad);
+//    Selection defs = d3.select("svg").append("defs");
+//    addBGImages(defs, icons.keySet(), "", rad * 2);
+//    addBGImages(defs, icons.keySet(), "legend_", rad);
     drawGraph(factor, rad);
 
     // create zoom behavior
