@@ -15,6 +15,7 @@ import org.treez.javafxd3.d3.demo.DemoCase;
 import org.treez.javafxd3.d3.demo.DemoFactory;
 import org.treez.javafxd3.javafx.JavaFxD3Browser;
 
+import com.sun.javafx.application.LauncherImpl;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -80,7 +81,12 @@ public class ExperimentGraphApp extends Application {
    * @param args
    */
   public static void main(String[] args) {
-    launch(args);
+    LauncherImpl.launchApplication(ExperimentGraphApp.class, SplashScreen.class, args);
+ }
+  
+  @Override
+  public void init() throws Exception {
+    Thread.sleep(3000);
   }
 
   /**
