@@ -141,7 +141,7 @@ public class ExperimentGraphApp extends Application {
       runDemoSuite(stage, demoMenuBox, demoPreferenceBox, factors);
     };
     // create browser
-    browser = new JavaFxD3Browser(afterBrowserLoadingHook, true); // set true for firebug debug
+    browser = new JavaFxD3Browser(afterBrowserLoadingHook, false); // set true for firebug debug
     // add browser
     hBoxChildren.add(browser);
 
@@ -250,7 +250,7 @@ public class ExperimentGraphApp extends Application {
 
     // set stage title
     String versionString = "D3 API version: " + d3.version();
-    String title = "Experiment Graph" + versionString;
+    String title = "Experiment Graph - " + versionString;
     stage.setTitle(title);
 
     factors.valueProperty().addListener(new ChangeListener<String>() {
