@@ -1,6 +1,6 @@
 # Experiment Graph
 
-[![Build Status](https://travis-ci.org/qbicsoftware/experiment-graph-gui.svg?branch=development)](https://travis-ci.org/qbicsoftware/experiment-graph-gui)[![Code Coverage]( https://codecov.io/gh/qbicsoftware/experiment-graph-gui/branch/development/graph/badge.svg)](https://codecov.io/gh/qbicsoftware/experiment-graph-gui)
+[![Build Status](https://travis-ci.org/qbicsoftware/experiment-graph-gui.svg?branch=master)](https://travis-ci.org/qbicsoftware/experiment-graph-gui)[![Code Coverage]( https://codecov.io/gh/qbicsoftware/experiment-graph-gui/branch/master/graph/badge.svg)](https://codecov.io/gh/qbicsoftware/experiment-graph-gui)
 
 Experiment Graph - Parses experimental designs and displays a graph summarizing nodes by their experimental factors
 
