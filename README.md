@@ -55,6 +55,7 @@ It is based on third party code and you have to consider the corresponding licen
 * javafx-d3 => MIT: https://github.com/stefaneidelloth/javafx-d3/blob/master/LICENSE
 * d3.js => BSD: https://github.com/mbostock/d3/blob/master/LICENSE
 * dagre => MIT: https://github.com/dagrejs/dagre/blob/master/LICENSE
+* ISAcreator => CPAL: https://github.com/ISA-tools/ISAcreator/blob/master/LICENSE.txt
 
 
 [maven]: https://maven.apache.org/
