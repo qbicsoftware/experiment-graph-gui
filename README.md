@@ -26,7 +26,7 @@ You will also need to set the `MAVEN_OPTS` environment variable to contain the J
 mvn package
 ```
 
-This will compile this project and generate the binaries in the `target` folder. After Maven reports a `BUILD SUCCESS`, you can execute this stand-alone viewer like so:
+This will compile this project and generate the binaries in the `target` folder. After Maven reports a `BUILD SUCCESS`, you can start this stand-alone viewer like so:
 
 ```sh
 java -jar target/experiment-graph-gui-<version>-jar-with-dependencies.jar
@@ -39,7 +39,6 @@ java -jar target/experiment-graph-gui-0.1.0-jar-with-dependencies.jar
 ```
 
 ## License
-
 This project is licensed under an MIT License:
 
 * https://github.com/qbicsoftware/experiment-graph-gui/blob/development/LICENSE
