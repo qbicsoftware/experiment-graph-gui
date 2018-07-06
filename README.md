@@ -15,16 +15,18 @@ To execute this stand-alone viewer, you require the following software component
 * A Java Runtime Environment (JRE) or Java Development Kit (JDK) compatible with Java 8. Installation of Java depends on your operating system.
 * JavaFX dependencies. This also depends on your operating system and whether you are using Oracle's JDK or OpenJDK.
 
-### Downloading a release
-Releases for this repository are found in the [releases page](https://github.com/qbicsoftware/experiment-graph-gui/releases). Find the latest version and download the contents of the release.
+### Installing a release
+* Find the latest release on the [releases page](https://github.com/qbicsoftware/experiment-graph-gui/releases). 
+* Download the `experiment-graph-gui-<version>.tar.gz` file from the release assets (e.g., `experiment-graph-gui-0.2.1.tar.gz`). 
+* Unzip the `experiment-graph-gui-<version>.tar.gz` archive. This will create a folder named `experiment-graph-gui`.
 
-To execute the stand-alone viewer, execute the following command:
+To execute the stand-alone viewer, change to the `experiment-graph-gui` folder and execute the following command in a terminal:
 
 ```sh
 java -jar experiment-graph-gui.jar
 ```
 
-### Compiling the sources
+## Information for developers
 We use [Apache Maven](maven) to compile the source code, make sure you have the latest version installed.
 
 You will also need to set the `MAVEN_OPTS` environment variable to contain the Java Virtual Machine (JVM) option `-Xss4m` (i.e., `export MAVEN_OPTS="-Xss4m"` in Linux). This will instruct the JVM to set the thread stack size to `4m`, which is required for the proper compilation of this project. Check [this page](http://maven.apache.org/configure.html) for more information on how to configure Maven. Afterwards, execute the following command on a terminal:
@@ -37,12 +39,6 @@ This will compile this project and generate the binaries in the `target` folder.
 
 ```sh
 java -jar target/experiment-graph-gui-<version>-jar-with-dependencies.jar
-```
-
-For instance, for version `0.1.0`, you would execute:
-
-```sh
-java -jar target/experiment-graph-gui-0.1.0-jar-with-dependencies.jar
 ```
 
 ## License
