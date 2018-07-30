@@ -41,40 +41,19 @@ public abstract class AbstractDemoCase implements DemoCase {
 	/**
 	 * Constructor
 	 * 
-	 * @param d3
-	 * @param demoPreferenceBox
+	 * @param d3 the D3 wrapper class
 	 */
-	public AbstractDemoCase(D3 d3, VBox demoPreferenceBox) {
+	public AbstractDemoCase(D3 d3) {
 		this.d3 = d3;
 		this.engine = d3.getJsEngine();
-		this.demoPreferenceBox = demoPreferenceBox;
 		loadCssForThisClass();
 	}
 	
 	//#end region
 	
 	//#region METHODS
-	
 	/**
-	 * Creates a new button on the demo preferences box
-	 * @param label
-	 * @param clickHandler
-	 */
-	protected void createButton(String label, EventHandler<ActionEvent> clickHandler) {
-		Button button = new Button();		
-		button.setText(label);
-		button.onActionProperty().set(clickHandler);
-		demoPreferenceBox.getChildren().add(button);
-	}
-	
-	protected void deleteOldPreferenceChildren(){
-		demoPreferenceBox.getChildren().clear();		
-	}
-	
-
-
-	/**
-	 * @return
+	 * @return the selection element
 	 */
 	public Selection getSvg() {
 		Selection svg = d3.select("#svg");

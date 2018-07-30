@@ -7,13 +7,13 @@ public abstract class DemoFactory {
 
 	/**
 	 * Creates a new demo case instance
-	 * @return
+	 * @return ne demo case instance
 	 */
 	public abstract DemoCase newInstance();
 
 	/**
 	 * Creates an id for the demo case
-	 * @return
+	 * @return id for the demo case
 	 */
 	public String id() {
 		String name = this.getClass().getName();
