@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>life.qbic</groupId>
 		<artifactId>cli-parent-pom</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<version>1.2.0</version>
 	</parent>
 	<artifactId>experiment-graph-gui</artifactId>
 	<version>0.2.0-SNAPSHOT</version>
@@ -43,7 +43,7 @@
 		</repository>
 	</repositories>
 
-	<dependencies>		
+	<dependencies>
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>javafx-d3-lib</artifactId>
@@ -51,7 +51,7 @@
 		<dependency>
 			<groupId>life.qbic</groupId>
 			<artifactId>experimental-design-lib</artifactId>
-			<version>0.10.0</version>
+			<version>0.11.0</version>
 		</dependency>
 	</dependencies>
 
