@@ -63,15 +63,8 @@ public class ExperimentGraph extends AbstractDemoCase {
   Set<String> usedSymbols;
   Set<String> noSymbols;
   private Map<Integer, SampleSummary> idToSample;
-  private final Map<String, String> icons = new HashMap<String, String>() {
-    {
-      put("dna", "img/dna_filled.svg");
-      put("rna", "img/rna.png");
-      put("peptides", "img/peptide.svg");
-      put("proteins", "img/protein.png");
-      put("smallmolecules", "img/mol.png");
-    }
-  };
+  private static final Set<String> ICON_KEYS =
+      new HashSet<String>(Arrays.asList("dna", "rna", "peptides", "proteins", "smallmolecules"));
 
   /**
    * initialize Experiment Graph
@@ -479,7 +472,7 @@ public class ExperimentGraph extends AbstractDemoCase {
 
       String name = s.getName();
       String lowerLabel = name.toLowerCase().replaceAll("\\s", "");
-      if (icons.containsKey(lowerLabel)) {
+      if (ICON_KEYS.contains(lowerLabel)) {
         usedSymbols.add(name);
       } else {
         if (!name.isEmpty())
