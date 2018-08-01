@@ -54,8 +54,8 @@ public class ExperimentGraph extends AbstractDemoCase {
   private OrdinalScale colorScale;
   private static final String SYMBOL_NODE_COLOR = "#3494F8";
   final Margin margin = new Margin(20, 20, 30, 40);
-  // final int width = 1200 - margin.left - margin.right;
-  // final int height = 800 - margin.top - margin.bottom;
+//   final int width = 1200 - margin.left - margin.right;
+//   final int height = 800 - margin.top - margin.bottom;
 
   int width;
   int height;
@@ -79,8 +79,8 @@ public class ExperimentGraph extends AbstractDemoCase {
       double height) {
     super(d3);
     globalStage = stage;
-    width = (int) width - margin.left;
-    height = (int) height - margin.top;
+    this.width = (int) width - margin.left;
+    this.height = (int) height - margin.top;
     try {
       init(nodes);
     } catch (IOException e) {
