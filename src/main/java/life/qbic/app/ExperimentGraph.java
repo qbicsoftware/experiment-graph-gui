@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,33 +54,33 @@ public class ExperimentGraph extends AbstractDemoCase {
   private OrdinalScale colorScale;
   private static final String SYMBOL_NODE_COLOR = "#3494F8";
   final Margin margin = new Margin(20, 20, 30, 40);
-  final int width = 1200 - margin.left - margin.right;
-  final int height = 800 - margin.top - margin.bottom;
+//   final int width = 1200 - margin.left - margin.right;
+//   final int height = 800 - margin.top - margin.bottom;
+
+  int width;
+  int height;
   // model
   Set<String> usedSymbols;
   Set<String> noSymbols;
   private Map<Integer, SampleSummary> idToSample;
-  private final Map<String, String> icons = new HashMap<String, String>() {
-    {
-      put("dna", "img/dna_filled.svg");
-      put("rna", "img/rna.png");
-      put("peptides", "img/peptide.svg");
-      put("proteins", "img/protein.png");
-      put("smallmolecules", "img/mol.png");
-    }
-  };
+  private static final Set<String> ICON_KEYS =
+      new HashSet<String>(Arrays.asList("dna", "rna", "peptides", "proteins", "smallmolecules"));
 
   /**
    * initialize Experiment Graph
    * 
-   * @param d3
-   * @param demoPreferenceBox
+   * @param d3 D3 wrapper
    * @param nodes List of Sample Summaries that will be drawn as nodes
    * @param stage the main jfx stage
+   * @param height available WebView height
+   * @param width available WebView width
    */
-  public ExperimentGraph(D3 d3, VBox demoPreferenceBox, List<SampleSummary> nodes, Stage stage) {
-    super(d3, demoPreferenceBox);
+  public ExperimentGraph(D3 d3, List<SampleSummary> nodes, Stage stage, double width,
+      double height) {
+    super(d3);
     globalStage = stage;
+    this.width = (int) width - margin.left;
+    this.height = (int) height - margin.top;
     try {
       init(nodes);
     } catch (IOException e) {
@@ -90,39 +92,22 @@ public class ExperimentGraph extends AbstractDemoCase {
   /**
    * Factory function for Experiment Graph initialization
    * 
-   * @param d3
-   * @param demoPreferenceBox
+   * @param d3 D3 wrapper
    * @param nodes List of Sample Summaries that will be drawn as nodes
    * @param stage the main jfx stage
-   * @return
+   * @param width available WebView width
+   * @param height available WebView height
+   * @return a new factory
    */
-  public static DemoFactory factory(D3 d3, VBox demoPreferenceBox, List<SampleSummary> nodes,
-      Stage stage) {
+  public static DemoFactory factory(D3 d3, List<SampleSummary> nodes, Stage stage, double width,
+      double height) {
     return new DemoFactory() {
       @Override
       public ExperimentGraph newInstance() {
-        return new ExperimentGraph(d3, demoPreferenceBox, nodes, stage);
+        return new ExperimentGraph(d3, nodes, stage, width, height);
       }
     };
   }
-
-//  private void addBGImages(Selection root, Set<String> iconSet, String path, int size) {
-//
-//    DataFunction<String> namesFunction =
-//        new DataFunctionWrapper<>(String.class, engine, (names) -> {
-//          return path + names;
-//        });
-//
-//    DataFunction<String> urlFunction = new DataFunctionWrapper<>(String.class, engine, (names) -> {
-//      return icons.get(names);
-//    });
-//
-//    root.selectAll("patterns").data(iconSet.toArray()).enter().append("svg:pattern")
-//        .attr("width", 1).attr("height", 1)
-//        // .attr("patternContentUnits", "objectBoundingBox")
-//        .attr("patternUnits", "objectBoundingBox").attr("id", namesFunction).append("svg:image")
-//        .attr("width", size * 2).attr("height", size * 2).attr("xlink:href", urlFunction);
-//  }
 
   private void init(List<SampleSummary> nodes) throws IOException {
     int factor = 1;
@@ -134,12 +119,9 @@ public class ExperimentGraph extends AbstractDemoCase {
         .append("g") //
         .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
 
-    initJSLibraries();
+    injectJSLibraries();
     computeGraphCoordinates(rad, nodes);
 
-//    Selection defs = d3.select("svg").append("defs");
-//    addBGImages(defs, icons.keySet(), "", rad * 2);
-//    addBGImages(defs, icons.keySet(), "legend_", rad);
     drawGraph(factor, rad);
 
     // create zoom behavior
@@ -156,7 +138,7 @@ public class ExperimentGraph extends AbstractDemoCase {
 
   }
 
-  private void initJSLibraries() throws IOException {
+  private void injectJSLibraries() throws IOException {
     for (String lib : libs) {
       InputStream in = getClass().getResourceAsStream("/" + lib);
       String script = IOUtils.toString(in, "utf-8");
@@ -234,20 +216,12 @@ public class ExperimentGraph extends AbstractDemoCase {
             .attr("stroke", "black") //
             .style("fill", color) //
             .on("click", showSamples(label, summary.getSamples())); //
-        circle.on("mouseover", fade(circle, 0.9)) //
+        circle.on("mouseover", fade(circle, 0.75)) //
             .on("mouseout", fade(circle, 1.0)); //
 
         // circles containing symbols
         if (usedSymbols.contains(label)) {
-          // Selection sCircle = d3.select("g").append("circle")//
-          // .attr("cx", x) //
-          // .attr("cy", y) //
-          // .attr("r", rad) //
-          // .attr("stroke", "black") //
-          // .on("click", showSamples(label, summary.getSamples())); //
-          drawAnalyteIcon(d3.select("g"), lowerLabel, x, y, rad);// "url(#" + lowerLabel + ")") //
-          // circle.on("mouseover", fade(circle, 0.3)) //
-          // .on("mouseout", fade(circle, 1.0)); //
+          drawAnalyteIcon(d3.select("g"), lowerLabel, x, y, rad);
         }
         // sample amount
         d3.select("g").append("text") //
@@ -299,13 +273,7 @@ public class ExperimentGraph extends AbstractDemoCase {
           .attr("fill", SYMBOL_NODE_COLOR); //
 
       String type = label.toLowerCase().replaceAll("\\s", "");
-      // d3.select("g") //
-      // .append("circle") //
-      // .attr("cx", legendX) //
-      // .attr("cy", legendY + legendEntryHeight * (noSymbols.size() + i) + 10) //
-      // .attr("r", rad / 2) //
-      // .attr("stroke", "black"); //
-      // .attr("fill", "url(#legend_" + type + ")"); //
+
       drawAnalyteIcon(d3.select("g"), type, legendX,
           legendY + legendEntryHeight * (noSymbols.size() + i) + 10, rad / 2);//
 
@@ -320,14 +288,6 @@ public class ExperimentGraph extends AbstractDemoCase {
           .attr("y", legendY + legendEntryHeight * (noSymbols.size() + i) + 15); //
     }
 
-//    double initZoom = new Double(width) / maxX;
-//    if (initZoom < 1) {
-//      System.out.println(width);
-//      System.out.println(maxX);
-//      System.out.println(initZoom);
-//      svg.attr("transform", "translate(0, 0)scale(" + initZoom + ")");
-//    }
-      
   }
 
   private String shortenInfo(String info) {
@@ -500,17 +460,19 @@ public class ExperimentGraph extends AbstractDemoCase {
     // Default to assigning a new object as a label for each new edge.
     engine.executeScript("g.setDefaultEdgeLabel(function() { return {}; });");
 
-    usedSymbols = new HashSet<String>();
-    noSymbols = new HashSet<String>();
+    usedSymbols = new LinkedHashSet<String>();
+    noSymbols = new LinkedHashSet<String>();
 
     idToSample = new HashMap<Integer, SampleSummary>();
+    Collections.sort(summaries);
     for (SampleSummary s : summaries) {
+
       int id = s.getId();
       idToSample.put(id, s);
 
       String name = s.getName();
       String lowerLabel = name.toLowerCase().replaceAll("\\s", "");
-      if (icons.containsKey(lowerLabel)) {
+      if (ICON_KEYS.contains(lowerLabel)) {
         usedSymbols.add(name);
       } else {
         if (!name.isEmpty())
@@ -532,17 +494,12 @@ public class ExperimentGraph extends AbstractDemoCase {
     colorScale = cat.domain(noSymbols.toArray(new String[noSymbols.size()]));
 
     engine.executeScript("dagre.layout(g)");
-
   }
 
   @Override
-  public void start() {
-
-  }
+  public void start() {}
 
   @Override
-  public void stop() {
-
-  }
+  public void stop() {}
 
 }
