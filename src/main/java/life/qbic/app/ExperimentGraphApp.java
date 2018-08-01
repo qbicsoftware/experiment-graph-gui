@@ -48,6 +48,7 @@ import life.qbic.expdesign.SamplePreparator;
 import life.qbic.expdesign.io.EasyDesignReader;
 import life.qbic.expdesign.model.StructuredExperiment;
 import life.qbic.isatab.ISAReader;
+import life.qbic.isatab.ISAToReadable;
 
 /**
  * Stand alone tool to display imported experimental designs according to their experimental
@@ -208,7 +209,7 @@ public class ExperimentGraphApp extends Application {
             factors.getItems().clear();
             studies.getItems().clear();
             if (isa) {
-              ISAReader isaParser = new ISAReader();
+              ISAReader isaParser = new ISAReader(new ISAToReadable());
               isaParser.createAllGraphs(file);
               isaStudies = new HashMap<Study, StructuredExperiment>();
               List<String> studyNames = new ArrayList<String>();
